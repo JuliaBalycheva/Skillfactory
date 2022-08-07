@@ -1,0 +1,50 @@
+https://docs.google.com/document/d/10BxulypFHuV-FcJdTM1uBLEdOto0tltbk7VWIM8GBM4/edit 
+
+QAP_bot
+Телеграм-бот для конвертации валют. Имя в телеграме @QAP_Convertbot
+
+Этот телеграм-бот знает несколько команд:
+
+/start выдает стартовое сообщение и пишет, какие команды еще он умеет выполнять;
+/help напоминает, какие команды умеет выполнять бот, а также как именно их нужно вводить;
+/values выписывает все валюты, которые знает бот;
+<валюта 1> <валюта 2> <количество> выводит значение количества валюты 2 от валюты 1.
+Данный бот не запущен, необходимо запустить бот со своего устройства (загрузить данный репозиторий на свой компьютер) Для работы с данным телеграм-ботом необходимо установить пакеты requests и PyTelegramBotAPI.
+
+Может быть, данный бот содержит ошибки;)
+
+import json
+import requests
+from config import *
+
+
+class ExchangeException(Exception):
+    pass
+
+
+class Exchange:
+    @staticmethod
+    def get_price(quote: str, base: str, amount: str):
+        if quote == base:
+            raise ExchangeException(
+                f'Нельзя перевести одинаковые валюты {base}.')
+
+        try:
+            quote_ticker = keys[quote]
+        except KeyError:
+            raise ExchangeException(f'Не смог обработать валюту {quote}')
+
+        try:
+            base_ticker = keys[base]
+        except KeyError:
+            raise ExchangeException(f'Не смог обработать валюту {base}')
+
+        try:
+            amount = int(amount)
+        except ValueError:
+            raise ExchangeException(f'Не смог обработать количество {amount}')
+
+        r = requests.get(
+            f'https://min-api.cryptocompare.com/data/price?fsym={base_ticker}&tsyms={quote_ticker}')
+        total_base = float(json.loads(r.content)[keys[quote]])
+        return total_base
